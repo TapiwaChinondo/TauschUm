@@ -19,3 +19,10 @@ def get_items():
             "owner": "Dish"
         }
     ]
+    
+@app.get("/math")    
+def get_math():
+    num = 1
+    return [
+        num +10
+    ]
