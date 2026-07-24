@@ -1,6 +1,6 @@
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 
 from . import db_models
@@ -25,6 +25,7 @@ Base.metadata.create_all(bind=engine)
 
 class UserCreate(BaseModel):
     username: str
+    email: EmailStr
     password: str
     address: str
 
@@ -32,6 +33,7 @@ class UserCreate(BaseModel):
 class UserResponse(BaseModel):
     id: int
     username: str
+    email: EmailStr
     address: str
 
     model_config = {
@@ -84,8 +86,20 @@ def create_user(
             detail="Username is already taken",
         )
     
+    # Adding duplicate email check 
+    existing_email = db.query(db_models.User).filter(
+        db_models.User.email == user.email
+    ).first()
+
+    if existing_email is not None:
+        raise HTTPException(
+            status_code=409,
+            detail="Email is already registered.",
+        )
+        
     db_user = db_models.User(
         username=user.username,
+        email=user.email,
         password_hash=user.password,
         address=user.address,
     )
