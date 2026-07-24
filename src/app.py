@@ -57,6 +57,18 @@ def create_user(
     user: UserCreate,
     db: Session = Depends(get_db),
 ):
+    # Prevent dupliate user names cleanly
+    existing_user = db.query(db_models.User).filter(
+        db_models.User.username == user.username
+    ).first()
+
+    # Error message 
+    if existing_user is not None:
+        raise HTTPException(
+            status_code=409,
+            detail="Username is already taken",
+        )
+    
     db_user = db_models.User(
         username=user.username,
         password_hash=user.password,
