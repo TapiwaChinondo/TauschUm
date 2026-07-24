@@ -1,4 +1,5 @@
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -6,6 +7,15 @@ from . import db_models
 from .database import Base, SessionLocal, engine
 
 app = FastAPI()
+
+# Connecting with front end
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://127.0.0.1:5500"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Updated the app to load and work with a database so that users and items can persist when offline
 
@@ -34,6 +44,11 @@ class ItemCreate(BaseModel):
     description: str | None = None
     photo_path: str | None = None
     owner_id: int
+
+# Logging in
+class LoginRequest(BaseModel):
+    username: str
+    password: str
 
 # Open a database session for each request and close it afterwards
 def get_db():
@@ -123,3 +138,30 @@ def get_items(
     db: Session = Depends(get_db),
 ):
     return db.query(db_models.Item).all()
+
+# Implementing logging in
+@app.post("/login")
+def login(
+    login_data: LoginRequest,
+    db: Session = Depends(get_db),
+):
+    user = db.query(db_models.User).filter(
+        db_models.User.username == login_data.username
+    ).first()
+
+    if user is None:
+        raise HTTPException(
+            status_code=401,
+            detail="Incorrect username or password",
+        )
+
+    if user.password_hash != login_data.password:
+        raise HTTPException(
+            status_code=401,
+            detail="Incorrect username or password",
+        )
+
+    return {
+        "message": "Login successful",
+        "username": user.username,
+    }
