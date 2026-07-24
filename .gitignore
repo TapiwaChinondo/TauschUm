@@ -3,3 +3,8 @@
 
 # Python
 /src/__pycache__/
+/src/reset_db.py
+
+# Database 
+
+/database

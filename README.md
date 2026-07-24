@@ -23,3 +23,6 @@ Also an opportunity to work on frontend which I rarely do.
 - Git
 
 Look into React and or other technologies for the frontend 
+
+
+Run uvicorn src.app:app --reload
