@@ -18,6 +18,16 @@ class UserCreate(BaseModel):
     password: str
     address: str
 
+# Implementing a response so that passwords are not exposed 
+class UserResponse(BaseModel):
+    id: int
+    username: str
+    address: str
+
+    model_config = {
+        "from_attributes": True
+    }
+
 
 class ItemCreate(BaseModel):
     name: str
@@ -42,7 +52,7 @@ def home():
     }
 
 
-@app.post("/users")
+@app.post("/users", response_model=UserResponse)
 def create_user(
     user: UserCreate,
     db: Session = Depends(get_db),
@@ -60,7 +70,7 @@ def create_user(
     return db_user
 
 
-@app.get("/users")
+@app.get("/users", response_model=list[UserResponse])
 def get_users(
     db: Session = Depends(get_db),
 ):
