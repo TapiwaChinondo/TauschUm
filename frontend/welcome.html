@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Welcome | TauschUm</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <main class="home-container">
+        <h1 id="welcome-message">
+            Welcome!
+        </h1>
+
+        <p>
+            You have successfully logged into TauschUm.
+        </p>
+
+        <a class="button" href="index.html">
+            Back to home
+        </a>
+    </main>
+
+    <script>
+        const username = localStorage.getItem("username");
+
+        const welcomeMessage =
+            document.getElementById("welcome-message");
+
+        if (username) {
+            welcomeMessage.textContent =
+                "Welcome, " + username + "!";
+        }
+    </script>
+</body>
+</html>

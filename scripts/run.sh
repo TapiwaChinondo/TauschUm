@@ -8,6 +8,6 @@ FRONTEND_PID=$!
 
 sleep 1
 
-open -a Safari http://127.0.0.1:5500/frontend/index.html
+open -a Safari "http://127.0.0.1:5500/"
 
 wait

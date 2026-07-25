@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Login | TauschUm</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <main class="form-container">
+        <h1>Login</h1>
+
+        <form id="login-form">
+            <label for="username">
+                Username
+            </label>
+
+            <input
+                id="username"
+                type="text"
+                required
+            >
+
+            <label for="password">
+                Password
+            </label>
+
+            <input
+                id="password"
+                type="password"
+                required
+            >
+
+            <button type="submit">
+                Login
+            </button>
+        </form>
+
+        <p id="message"></p>
+
+        <a href="index.html">
+            Back to home
+        </a>
+    </main>
+
+    <script>
+        const form = document.getElementById("login-form");
+        const message = document.getElementById("message");
+
+        form.addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            const username =
+                document.getElementById("username").value;
+
+            const password =
+                document.getElementById("password").value;
+
+            const response = await fetch(
+                "http://127.0.0.1:8000/login",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    })
+                }
+            );
+
+            const data = await response.json();
+
+            if (response.ok) {
+                localStorage.setItem(
+                    "username",
+                    data.username
+                );
+
+                window.location.href = "welcome.html";
+            } else {
+                message.textContent = data.detail;
+            }
+        });
+    </script>
+</body>
+</html>

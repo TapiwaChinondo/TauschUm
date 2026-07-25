@@ -26,3 +26,6 @@ Look into React and or other technologies for the frontend
 
 
 Run uvicorn src.app:app --reload
+
+Run 
+python -m src.reset_db
