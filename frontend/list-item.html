@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>List an Item | TauschUm</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="list-item-page">
+
+    <header class="marketplace-header">
+        <a href="marketplace.html" class="logo">
+            TauschUm
+        </a>
+
+        <span id="username-display"></span>
+    </header>
+
+    <main class="list-item-container">
+
+        <section class="list-item-card">
+            <h1>List an item</h1>
+
+            <p>
+                Add something you are willing to trade.
+            </p>
+
+            <form id="list-item-form">
+
+                <label for="name">
+                    Item name
+                </label>
+
+                <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    required
+                >
+
+                <label for="description">
+                    Description
+                </label>
+
+                <textarea
+                    id="description"
+                    name="description"
+                    rows="5"
+                    required
+                ></textarea>
+
+                <label for="photo">
+                    Item photo
+                </label>
+
+                <input
+                    type="file"
+                    id="photo"
+                    name="photo"
+                    accept="image/jpeg,image/png,image/webp"
+                    required
+                >
+
+                <img
+                    id="photo-preview"
+                    class="photo-preview"
+                    alt="Selected item preview"
+                    hidden
+                >
+
+                <p
+                    id="form-message"
+                    class="form-message"
+                ></p>
+
+                <button
+                    type="submit"
+                    class="add-item-button"
+                >
+                    List item
+                </button>
+
+            </form>
+        </section>
+
+    </main>
+
+    <script>
+        const username =
+            localStorage.getItem("username");
+
+        const userId =
+            localStorage.getItem("user_id");
+
+        const usernameDisplay =
+            document.getElementById(
+                "username-display"
+            );
+
+        const form =
+            document.getElementById(
+                "list-item-form"
+            );
+
+        const photoInput =
+            document.getElementById("photo");
+
+        const photoPreview =
+            document.getElementById(
+                "photo-preview"
+            );
+
+        const formMessage =
+            document.getElementById(
+                "form-message"
+            );
+
+        if (!username || !userId) {
+            window.location.href = "login.html";
+        } else {
+            usernameDisplay.textContent =
+                `Hello, ${username}`;
+        }
+
+        photoInput.addEventListener(
+            "change",
+            function () {
+                const selectedPhoto =
+                    photoInput.files[0];
+
+                if (!selectedPhoto) {
+                    photoPreview.hidden = true;
+                    return;
+                }
+
+                photoPreview.src =
+                    URL.createObjectURL(
+                        selectedPhoto
+                    );
+
+                photoPreview.hidden = false;
+            }
+        );
+
+        form.addEventListener(
+            "submit",
+            async function (event) {
+                event.preventDefault();
+
+                formMessage.textContent =
+                    "Uploading item...";
+
+                const formData =
+                    new FormData();
+
+                formData.append(
+                    "name",
+                    document.getElementById(
+                        "name"
+                    ).value
+                );
+
+                formData.append(
+                    "description",
+                    document.getElementById(
+                        "description"
+                    ).value
+                );
+
+                formData.append(
+                    "owner_id",
+                    userId
+                );
+
+                formData.append(
+                    "photo",
+                    photoInput.files[0]
+                );
+
+                try {
+                    const response = await fetch(
+                        "http://127.0.0.1:8000/items/upload",
+                        {
+                            method: "POST",
+                            body: formData,
+                        }
+                    );
+
+                    const result =
+                        await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(
+                            result.detail ||
+                            "Could not list item."
+                        );
+                    }
+
+                    window.location.href =
+                        "marketplace.html";
+
+                } catch (error) {
+                    formMessage.textContent =
+                        error.message;
+                }
+            }
+        );
+    </script>
+
+</body>
+</html>

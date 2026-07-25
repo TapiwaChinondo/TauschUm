@@ -80,12 +80,19 @@
             const data = await response.json();
 
             if (response.ok) {
+
+                localStorage.setItem(
+                    "user_id",
+                    data.user_id
+                );
+
+
                 localStorage.setItem(
                     "username",
                     data.username
                 );
 
-                window.location.href = "welcome.html";
+                window.location.href = "marketplace.html";
             } else {
                 message.textContent = data.detail;
             }

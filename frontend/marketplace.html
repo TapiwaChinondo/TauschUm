@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>TauschUm Marketplace</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="marketplace-page">
+
+    <header class="marketplace-header">
+        <a href="marketplace.html" class="logo">
+            TauschUm
+        </a>
+
+        <input
+            type="search"
+            class="search-bar"
+            placeholder="Search for items..."
+        >
+
+        <span id="username-display"></span>
+    </header>
+
+    <main class="marketplace-container">
+
+        <section class="marketplace-heading">
+            <div>
+                <h1>Marketplace</h1>
+
+                <p>Find something worth swapping for.</p>
+            </div>
+
+            <a
+                href="list-item.html"
+                class="add-item-button"
+            >
+                List an item
+            </a>
+        </section>
+
+        <section id="item-grid" class="item-grid">
+            <p>Loading items...</p>
+        </section>
+
+    </main>
+
+    <script>
+        const username =
+            localStorage.getItem("username");
+
+        const userId =
+            Number(localStorage.getItem("user_id"));
+
+        const usernameDisplay =
+            document.getElementById("username-display");
+
+        const itemGrid =
+            document.getElementById("item-grid");
+
+        if (username) {
+            usernameDisplay.textContent =
+                `Hello, ${username}`;
+        } else {
+            window.location.href = "login.html";
+        }
+
+        async function loadItems() {
+            try {
+                const response = await fetch(
+                    "http://127.0.0.1:8000/items"
+                );
+
+                if (!response.ok) {
+                    throw new Error(
+                        "Could not load marketplace items."
+                    );
+                }
+
+                const items = await response.json();
+
+                itemGrid.innerHTML = "";
+
+                const marketplaceItems = items.filter(
+                    item => item.owner_id !== userId
+                );
+
+                if (marketplaceItems.length === 0) {
+                    itemGrid.innerHTML =
+                        "<p>No items have been listed yet.</p>";
+
+                    return;
+                }
+
+                for (const item of marketplaceItems) {
+                    const card =
+                        document.createElement("article");
+
+                    card.className = "item-card";
+
+                    let imageContent = "Item image";
+
+                    if (item.photo_path) {
+                        imageContent = `
+                            <img
+                                src="${item.photo_path}"
+                                alt="${item.name}"
+                                class="item-image"
+                            >
+                        `;
+                    }
+
+                    card.innerHTML = `
+                        <div class="item-image-placeholder">
+                            ${imageContent}
+                        </div>
+
+                        <div class="item-card-content">
+                            <h2>${item.name}</h2>
+
+                            <p class="item-description">
+                                ${item.description || "No description provided."}
+                            </p>
+
+                            <p class="item-owner">
+                                Listed by
+                                <strong>
+                                    ${item.owner_username}
+                                </strong>
+                            </p>
+
+                            <div class="wishlist">
+                                <h3>Wishlist</h3>
+
+                                <p>
+                                    Wishlist coming soon.
+                                </p>
+                            </div>
+
+                            <a
+                                href="item.html?id=${item.id}"
+                                class="view-listing-button"
+                            >
+                                View listing
+                            </a>
+                        </div>
+                    `;
+
+                    itemGrid.appendChild(card);
+                }
+            } catch (error) {
+                itemGrid.innerHTML = `
+                    <p class="error-message">
+                        ${error.message}
+                    </p>
+                `;
+            }
+        }
+
+        loadItems();
+    </script>
+
+</body>
+</html>
