@@ -1,0 +1,118 @@
+/* 
+   Global paging style
+ */
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    min-height: 100%;
+}
+
+body {
+    min-height: 100vh;
+    margin: 0;
+
+    background-color: #f4f5f7;
+    color: #222222;
+
+    font-family: Arial, sans-serif;
+}
+
+img {
+    max-width: 100%;
+}
+
+button,
+input,
+textarea {
+    font: inherit;
+}
+
+button {
+    border: none;
+}
+
+
+/* 
+   Button Style
+*/
+
+button,
+.button {
+    display: inline-block;
+
+    padding: 12px 20px;
+
+    border: none;
+    border-radius: 6px;
+
+    background-color: #222222;
+    color: white;
+
+    text-decoration: none;
+
+    cursor: pointer;
+
+    font-size: 16px;
+}
+
+button:hover,
+.button:hover {
+    background-color: #444444;
+}
+
+button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+
+/* 
+   Login, Registration and Home Pages 
+*/
+
+.home-container,
+.form-container {
+    width: 90%;
+    max-width: 500px;
+
+    margin: 100px auto;
+    padding: 30px;
+
+    background-color: white;
+    border-radius: 10px;
+
+    text-align: center;
+}
+
+.home-container a,
+.form-container a {
+    display: inline-block;
+    margin-top: 20px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    text-align: left;
+}
+
+form input,
+form textarea {
+    width: 100%;
+    padding: 10px;
+
+    border: 1px solid #bbbbbb;
+    border-radius: 6px;
+
+    font-size: 16px;
+}
+
+form button {
+    margin-top: 10px;
+}
+

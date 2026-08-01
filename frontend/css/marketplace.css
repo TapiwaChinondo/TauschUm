@@ -1,0 +1,192 @@
+/* 
+    Marketplace css
+*/
+
+.marketplace-page {
+    min-height: 100vh;
+
+    background-color: #f4f5f7;
+}
+
+.marketplace-container {
+    width: min(1200px, 100%);
+
+    margin: 0 auto;
+    padding: 35px 25px;
+}
+
+.marketplace-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+
+    margin-bottom: 25px;
+}
+
+.marketplace-heading h1 {
+    margin: 0 0 8px;
+
+    font-size: 34px;
+}
+
+.marketplace-heading p {
+    margin: 0;
+
+    color: #666666;
+}
+
+.add-item-button {
+    display: inline-block;
+
+    flex-shrink: 0;
+
+    margin: 0;
+    padding: 12px 20px;
+
+    border-radius: 8px;
+
+    background-color: #222222;
+    color: white;
+
+    font-size: 15px;
+    font-weight: 600;
+
+    text-decoration: none;
+}
+
+.add-item-button:hover {
+    background-color: #444444;
+}
+
+
+/* 
+   Item Grid
+*/
+
+.item-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fill, minmax(250px, 1fr));
+
+    gap: 24px;
+}
+
+.item-card {
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+
+    background-color: white;
+
+    border: 1px solid #dddddd;
+    border-radius: 12px;
+
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
+}
+
+.item-image-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    height: 190px;
+
+    overflow: hidden;
+
+    background-color: #e3e5e8;
+    color: #777777;
+}
+
+.item-image-text {
+    color: #777777;
+}
+
+.item-image {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+}
+
+.item-card-content {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+
+    padding: 18px;
+}
+
+.item-card-content h2 {
+    margin: 0 0 8px;
+
+    font-size: 20px;
+}
+
+.item-description {
+    margin: 0 0 14px;
+
+    color: #555555;
+
+    line-height: 1.5;
+}
+
+.item-owner {
+    margin: 0 0 18px;
+
+    color: #555555;
+}
+
+.wishlist {
+    margin-bottom: 18px;
+    padding: 14px;
+
+    background-color: #f5f5f5;
+    border-radius: 8px;
+}
+
+.wishlist h3 {
+    margin: 0 0 8px;
+
+    font-size: 15px;
+}
+
+.wishlist p,
+.wishlist ul {
+    margin: 0;
+
+    color: #555555;
+}
+
+.wishlist ul {
+    padding-left: 20px;
+}
+
+.wishlist li {
+    margin-bottom: 5px;
+}
+
+.view-listing-button {
+    display: block;
+
+    margin: auto 0 0;
+    padding: 11px;
+
+    border-radius: 8px;
+
+    background-color: #222222;
+    color: white;
+
+    text-align: center;
+    text-decoration: none;
+}
+
+.view-listing-button:hover {
+    background-color: #444444;
+}
+

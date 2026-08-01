@@ -1,0 +1,594 @@
+/* 
+    Trade Request page
+*/
+
+   .trade-page {
+    width: min(1200px, calc(100% - 48px));
+    margin: 48px auto 80px;
+}
+
+.trade-page-heading {
+    margin-bottom: 28px;
+}
+
+.trade-page-heading h1 {
+    margin: 0 0 8px;
+    font-size: 2rem;
+}
+
+.trade-page-heading p {
+    margin: 0;
+    color: #666666;
+    font-size: 1rem;
+}
+
+
+/* Trade request tabs */
+
+.trade-tabs {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid #dddddd;
+}
+
+.trade-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    border: 1px solid #cccccc;
+    border-radius: 8px;
+
+    padding: 11px 18px;
+
+    background: white;
+    color: #333333;
+
+    font: inherit;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.trade-tab:hover {
+    border-color: #6b2a8f;
+    color: #6b2a8f;
+}
+
+.trade-tab.active {
+    border-color: #6b2a8f;
+    background: #6b2a8f;
+    color: white;
+}
+
+.trade-tab-count {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+
+    min-width: 24px;
+    height: 24px;
+
+    padding: 0 7px;
+
+    border-radius: 999px;
+
+    background: #eeeeee;
+    color: #444444;
+
+    font-size: 0.82rem;
+}
+
+.trade-tab.active .trade-tab-count {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+
+/* Messages */
+
+.trade-message {
+    display: none;
+
+    margin-bottom: 22px;
+    padding: 14px 16px;
+
+    border-radius: 8px;
+}
+
+.trade-message.success {
+    display: block;
+
+    border: 1px solid #b8dfc3;
+    background: #edf8f0;
+    color: #176332;
+}
+
+.trade-message.error {
+    display: block;
+
+    border: 1px solid #efc4c4;
+    background: #fff0f0;
+    color: #9d1c1c;
+}
+
+
+/* Request list */
+
+.trade-list {
+    display: grid;
+    gap: 22px;
+}
+
+.trade-loading,
+.trade-empty {
+    padding: 52px 24px;
+
+    border: 1px solid #dddddd;
+    border-radius: 12px;
+
+    background: white;
+    color: #666666;
+
+    text-align: center;
+}
+
+
+/* Individual trade card */
+
+.trade-card {
+    overflow: hidden;
+
+    border: 1px solid #dddddd;
+    border-radius: 12px;
+
+    background: white;
+
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
+}
+
+.trade-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+
+    gap: 18px;
+
+    padding: 20px 22px;
+
+    border-bottom: 1px solid #eeeeee;
+}
+
+.trade-card-header h2 {
+    margin: 0 0 6px;
+
+    font-size: 1.1rem;
+}
+
+.trade-date {
+    margin: 0;
+
+    color: #777777;
+
+    font-size: 0.9rem;
+}
+
+
+/* Status badges */
+
+.trade-status {
+    flex-shrink: 0;
+
+    padding: 7px 12px;
+
+    border-radius: 999px;
+
+    font-size: 0.8rem;
+    font-weight: 700;
+
+    text-transform: capitalize;
+}
+
+.status-pending {
+    background: #fff3cd;
+    color: #765500;
+}
+
+.status-accepted {
+    background: #dff5e6;
+    color: #176332;
+}
+
+.status-declined,
+.status-cancelled {
+    background: #f8dddd;
+    color: #8c2929;
+}
+
+.status-countered {
+    background: #eee4f5;
+    color: #6b2a8f;
+}
+
+.status-unavailable {
+    background: #eeeeee;
+    color: #555555;
+}
+
+
+/* Offered and requested item layout */
+
+.trade-comparison {
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        auto
+        minmax(0, 1fr);
+
+    align-items: stretch;
+
+    gap: 22px;
+
+    padding: 24px 22px;
+}
+
+.trade-side {
+    min-width: 0;
+}
+
+.trade-side h3 {
+    margin: 0 0 14px;
+
+    color: #333333;
+
+    font-size: 1rem;
+}
+
+.trade-direction {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    min-width: 52px;
+
+    color: #6b2a8f;
+
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+
+/* Items inside a trade */
+
+.trade-items {
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fill, minmax(145px, 1fr));
+
+    gap: 14px;
+}
+
+.trade-item {
+    overflow: hidden;
+
+    border: 1px solid #e2e2e2;
+    border-radius: 10px;
+
+    background: white;
+}
+
+.trade-item img,
+.trade-item-placeholder {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    width: 100%;
+    height: 120px;
+
+    object-fit: cover;
+
+    background: #f0f0f0;
+    color: #777777;
+}
+
+.trade-item-info {
+    padding: 11px;
+}
+
+.trade-item-name {
+    margin: 0 0 5px;
+
+    color: #222222;
+
+    font-weight: 700;
+}
+
+.trade-item-owner {
+    margin: 0;
+
+    color: #777777;
+
+    font-size: 0.84rem;
+}
+
+
+/* Trade buttons */
+
+.trade-card-footer {
+    display: flex;
+    justify-content: flex-end;
+
+    gap: 10px;
+    flex-wrap: wrap;
+
+    padding: 17px 22px;
+
+    border-top: 1px solid #eeeeee;
+
+    background: #fafafa;
+}
+
+.trade-action {
+    border: none;
+    border-radius: 8px;
+
+    padding: 10px 16px;
+
+    font: inherit;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.trade-action-primary {
+    background: #6b2a8f;
+    color: white;
+}
+
+.trade-action-primary:hover {
+    background: #572274;
+}
+
+.trade-action-secondary {
+    border: 1px solid #6b2a8f;
+
+    background: white;
+    color: #6b2a8f;
+}
+
+.trade-action-secondary:hover {
+    background: #f7f0fa;
+}
+
+.trade-action-danger {
+    border: 1px solid #d5a5a5;
+
+    background: white;
+    color: #a02d2d;
+}
+
+.trade-action-danger:hover {
+    background: #fff1f1;
+}
+
+.trade-action:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+
+/* Counter offer modal */
+
+.counter-modal {
+    display: none;
+
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+
+    padding: 24px;
+
+    overflow-y: auto;
+
+    background: rgba(0, 0, 0, 0.55);
+}
+
+.counter-modal.open {
+    display: block;
+}
+
+.counter-dialog {
+    width: min(940px, 100%);
+    margin: 30px auto;
+
+    overflow: hidden;
+
+    border-radius: 12px;
+
+    background: white;
+}
+
+.counter-dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+
+    gap: 20px;
+
+    padding: 22px;
+
+    border-bottom: 1px solid #eeeeee;
+}
+
+.counter-dialog-header h2 {
+    margin: 0 0 6px;
+}
+
+.counter-dialog-header p {
+    margin: 0;
+
+    color: #666666;
+}
+
+.counter-close {
+    border: none;
+
+    background: transparent;
+
+    font-size: 1.8rem;
+    line-height: 1;
+
+    cursor: pointer;
+}
+
+.counter-dialog-body {
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(0, 1fr);
+
+    gap: 24px;
+
+    padding: 24px;
+}
+
+.counter-column h3 {
+    margin-top: 0;
+}
+
+.counter-column-description {
+    margin-top: -5px;
+
+    color: #666666;
+
+    font-size: 0.92rem;
+}
+
+.counter-selection-list {
+    display: grid;
+    gap: 10px;
+
+    max-height: 390px;
+
+    overflow-y: auto;
+
+    padding-right: 5px;
+}
+
+.counter-option {
+    display: grid;
+
+    grid-template-columns:
+        auto
+        68px
+        minmax(0, 1fr);
+
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 10px;
+
+    border: 1px solid #dddddd;
+    border-radius: 8px;
+
+    cursor: pointer;
+}
+
+.counter-option:hover {
+    border-color: #6b2a8f;
+}
+
+.counter-option:has(input:checked) {
+    border-color: #6b2a8f;
+    background: #f7f0fa;
+}
+
+.counter-option img,
+.counter-option-placeholder {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    width: 68px;
+    height: 58px;
+
+    border-radius: 6px;
+
+    object-fit: cover;
+
+    background: #eeeeee;
+    color: #777777;
+
+    font-size: 0.75rem;
+}
+
+.counter-option-name {
+    margin: 0 0 4px;
+
+    font-weight: 700;
+}
+
+.counter-option-owner {
+    margin: 0;
+
+    color: #777777;
+
+    font-size: 0.82rem;
+}
+
+.counter-dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+
+    gap: 10px;
+
+    padding: 18px 22px;
+
+    border-top: 1px solid #eeeeee;
+
+    background: #fafafa;
+}
+
+
+/* Mobile */
+
+@media (max-width: 760px) {
+    .trade-page {
+        width: min(100% - 28px, 1200px);
+        margin-top: 30px;
+    }
+
+    .trade-card-header {
+        flex-direction: column;
+    }
+
+    .trade-comparison {
+        grid-template-columns: 1fr;
+    }
+
+    .trade-direction {
+        min-height: 38px;
+
+        transform: rotate(90deg);
+    }
+
+    .counter-dialog-body {
+        grid-template-columns: 1fr;
+    }
+
+    .trade-card-footer {
+        justify-content: stretch;
+    }
+
+    .trade-action {
+        flex: 1;
+    }
+}

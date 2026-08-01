@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Ensure there are ni additonal proccesses running 
+lsof -ti :5500 | xargs kill
+
 uvicorn src.app:app --reload &
 BACKEND_PID=$!
 

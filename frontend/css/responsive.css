@@ -1,0 +1,148 @@
+/* 
+   General display on different screen sizes. (Overide if neccesary)
+*/
+
+@media (max-width: 1150px) {
+    .marketplace-header {
+        flex-wrap: wrap;
+    }
+
+    .main-navigation {
+        order: 3;
+
+        width: 100%;
+
+        overflow-x: auto;
+
+        padding-bottom: 2px;
+    }
+
+    .marketplace-user-section {
+        margin-left: auto;
+    }
+}
+
+@media (max-width: 800px) {
+    .trade-board {
+        grid-template-columns: 1fr;
+    }
+
+    .trade-exchange-symbol {
+        transform: rotate(90deg);
+
+        text-align: center;
+    }
+}
+
+@media (max-width: 750px) {
+    .listing-card {
+        grid-template-columns: 1fr;
+    }
+
+    .listing-image-section,
+    .listing-image,
+    .listing-image-placeholder {
+        min-height: 300px;
+        max-height: 400px;
+    }
+
+    .listing-information {
+        padding: 24px;
+    }
+}
+
+
+/* ==========================================================
+   19. MOBILE RESPONSIVENESS
+========================================================== */
+
+@media (max-width: 650px) {
+    .marketplace-header {
+        gap: 14px;
+
+        padding: 14px 18px;
+    }
+
+    .logo {
+        font-size: 21px;
+    }
+
+    .marketplace-user-section {
+        width: 100%;
+
+        justify-content: space-between;
+
+        margin-left: 0;
+    }
+
+    .main-navigation {
+        gap: 17px;
+    }
+
+    .nav-link {
+        font-size: 14px;
+    }
+
+    .marketplace-search-section {
+        padding: 16px 18px 0;
+    }
+
+    .marketplace-container {
+        padding: 28px 18px;
+    }
+
+    .marketplace-heading {
+        align-items: flex-start;
+    }
+
+    .marketplace-heading h1 {
+        font-size: 29px;
+    }
+
+    .add-item-button {
+        padding: 11px 14px;
+    }
+
+    .trade-menu {
+        padding: 20px 14px;
+    }
+
+    .trade-panel {
+        padding: 18px 12px;
+    }
+
+    .trade-slider {
+        grid-template-columns:
+            36px
+            minmax(0, 1fr)
+            36px;
+
+        gap: 7px;
+    }
+
+    .slider-button {
+        width: 36px;
+        height: 46px;
+    }
+}
+
+@media (max-width: 480px) {
+    .marketplace-heading {
+        flex-direction: column;
+    }
+
+    .add-item-button {
+        width: 100%;
+
+        text-align: center;
+    }
+
+    .trade-actions {
+        flex-direction: column-reverse;
+    }
+
+    .trade-actions button {
+        width: 100%;
+    }
+}
+

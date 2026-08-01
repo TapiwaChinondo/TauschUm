@@ -8,26 +8,94 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>TauschUm Marketplace</title>
+    <title>TauschUm Marketplace Hi Test</title>
 
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body class="marketplace-page">
 
+    <h1 style="background: red; color: white;">
+        TESTING NEW MARKETPLACE
+    </h1>
+
     <header class="marketplace-header">
         <a href="marketplace.html" class="logo">
-            TauschUm
+            ⇄ TauschUm
         </a>
 
+        <nav class="main-navigation">
+            <a
+                href="marketplace.html"
+                class="nav-link active"
+            >
+                Marketplace
+            </a>
+
+            <a
+                href="my-listings.html"
+                class="nav-link"
+            >
+                My Listings
+            </a>
+
+            <a
+                href="trade-requests.html"
+                class="nav-link notification-link"
+            >
+                Trade Requests
+
+                <span
+                    id="trade-request-count"
+                    class="notification-badge hidden"
+                >
+                    0
+                </span>
+            </a>
+
+            <a
+                href="chat.html"
+                class="nav-link notification-link"
+            >
+                Chat
+
+                <span
+                    id="chat-count"
+                    class="notification-badge hidden"
+                >
+                    0
+                </span>
+            </a>
+
+            <a
+                href="profile.html"
+                class="nav-link"
+            >
+                Profile
+            </a>
+        </nav>
+
+        <div class="marketplace-user-section">
+            <span id="username-display"></span>
+
+            <button
+                type="button"
+                id="logout-button"
+                class="logout-button"
+            >
+                Log out
+            </button>
+        </div>
+    </header>
+
+    <section class="marketplace-search-section">
         <input
             type="search"
+            id="search-bar"
             class="search-bar"
             placeholder="Search for items..."
         >
-
-        <span id="username-display"></span>
-    </header>
+    </section>
 
     <main class="marketplace-container">
 
@@ -35,7 +103,9 @@
             <div>
                 <h1>Marketplace</h1>
 
-                <p>Find something worth swapping for.</p>
+                <p>
+                    Find something worth swapping for.
+                </p>
             </div>
 
             <a
@@ -46,13 +116,19 @@
             </a>
         </section>
 
-        <section id="item-grid" class="item-grid">
+        <section
+            id="item-grid"
+            class="item-grid"
+        >
             <p>Loading items...</p>
         </section>
 
     </main>
 
     <script>
+        const API_URL =
+            "http://127.0.0.1:8000";
+
         const username =
             localStorage.getItem("username");
 
@@ -60,101 +136,200 @@
             Number(localStorage.getItem("user_id"));
 
         const usernameDisplay =
-            document.getElementById("username-display");
+            document.getElementById(
+                "username-display"
+            );
 
         const itemGrid =
-            document.getElementById("item-grid");
+            document.getElementById(
+                "item-grid"
+            );
 
-        if (username) {
+        const searchBar =
+            document.getElementById(
+                "search-bar"
+            );
+
+        const logoutButton =
+            document.getElementById(
+                "logout-button"
+            );
+
+        const tradeRequestCount =
+            document.getElementById(
+                "trade-request-count"
+            );
+
+        const chatCount =
+            document.getElementById(
+                "chat-count"
+            );
+
+        let marketplaceItems = [];
+
+        if (!username || !userId) {
+            window.location.href =
+                "login.html";
+        } else {
             usernameDisplay.textContent =
                 `Hello, ${username}`;
-        } else {
-            window.location.href = "login.html";
+        }
+
+        function logout() {
+            localStorage.removeItem(
+                "user_id"
+            );
+
+            localStorage.removeItem(
+                "username"
+            );
+
+            window.location.href =
+                "login.html";
+        }
+
+        function updateNotificationBadge(
+            badge,
+            count
+        ) {
+            if (count > 0) {
+                badge.textContent = count;
+
+                badge.classList.remove(
+                    "hidden"
+                );
+            } else {
+                badge.textContent = "0";
+
+                badge.classList.add(
+                    "hidden"
+                );
+            }
+        }
+
+        function renderItems(items) {
+            itemGrid.innerHTML = "";
+
+            if (items.length === 0) {
+                itemGrid.innerHTML = `
+                    <p>
+                        No matching items were found.
+                    </p>
+                `;
+
+                return;
+            }
+
+            for (const item of items) {
+                const card =
+                    document.createElement(
+                        "article"
+                    );
+
+                card.className =
+                    "item-card";
+
+                let imageContent = `
+                    <div class="item-image-text">
+                        Item image
+                    </div>
+                `;
+
+                if (item.photo_path) {
+                    imageContent = `
+                        <img
+                            src="${item.photo_path}"
+                            alt="${item.name}"
+                            class="item-image"
+                        >
+                    `;
+                }
+
+                card.innerHTML = `
+                    <div class="item-image-placeholder">
+                        ${imageContent}
+                    </div>
+
+                    <div class="item-card-content">
+                        <h2>${item.name}</h2>
+
+                        <p class="item-description">
+                            ${
+                                item.description ||
+                                "No description provided."
+                            }
+                        </p>
+
+                        <p class="item-owner">
+                            Listed by
+                            <strong>
+                                ${item.owner_username}
+                            </strong>
+                        </p>
+
+                        <div class="wishlist">
+                            <h3>Wishlist</h3>
+
+                            <p>
+                                Wishlist coming soon.
+                            </p>
+                        </div>
+
+                        <a
+                            href="item.html?id=${item.id}"
+                            class="view-listing-button"
+                        >
+                            View listing
+                        </a>
+                    </div>
+                `;
+
+                itemGrid.appendChild(
+                    card
+                );
+            }
         }
 
         async function loadItems() {
             try {
                 const response = await fetch(
-                    "http://127.0.0.1:8000/items"
+                    `${API_URL}/items`
                 );
+
+                const result =
+                    await response.json();
 
                 if (!response.ok) {
                     throw new Error(
+                        result.detail ||
                         "Could not load marketplace items."
                     );
                 }
 
-                const items = await response.json();
+                marketplaceItems =
+                    result.filter(
+                        item =>
+                            item.owner_id !==
+                            userId
+                    );
 
-                itemGrid.innerHTML = "";
-
-                const marketplaceItems = items.filter(
-                    item => item.owner_id !== userId
-                );
-
-                if (marketplaceItems.length === 0) {
-                    itemGrid.innerHTML =
-                        "<p>No items have been listed yet.</p>";
+                if (
+                    marketplaceItems.length === 0
+                ) {
+                    itemGrid.innerHTML = `
+                        <p>
+                            No other users have listed
+                            any items yet.
+                        </p>
+                    `;
 
                     return;
                 }
 
-                for (const item of marketplaceItems) {
-                    const card =
-                        document.createElement("article");
+                renderItems(
+                    marketplaceItems
+                );
 
-                    card.className = "item-card";
-
-                    let imageContent = "Item image";
-
-                    if (item.photo_path) {
-                        imageContent = `
-                            <img
-                                src="${item.photo_path}"
-                                alt="${item.name}"
-                                class="item-image"
-                            >
-                        `;
-                    }
-
-                    card.innerHTML = `
-                        <div class="item-image-placeholder">
-                            ${imageContent}
-                        </div>
-
-                        <div class="item-card-content">
-                            <h2>${item.name}</h2>
-
-                            <p class="item-description">
-                                ${item.description || "No description provided."}
-                            </p>
-
-                            <p class="item-owner">
-                                Listed by
-                                <strong>
-                                    ${item.owner_username}
-                                </strong>
-                            </p>
-
-                            <div class="wishlist">
-                                <h3>Wishlist</h3>
-
-                                <p>
-                                    Wishlist coming soon.
-                                </p>
-                            </div>
-
-                            <a
-                                href="item.html?id=${item.id}"
-                                class="view-listing-button"
-                            >
-                                View listing
-                            </a>
-                        </div>
-                    `;
-
-                    itemGrid.appendChild(card);
-                }
             } catch (error) {
                 itemGrid.innerHTML = `
                     <p class="error-message">
@@ -163,6 +338,83 @@
                 `;
             }
         }
+
+        function searchItems() {
+            const searchText =
+                searchBar.value
+                    .trim()
+                    .toLowerCase();
+
+            if (!searchText) {
+                renderItems(
+                    marketplaceItems
+                );
+
+                return;
+            }
+
+            const filteredItems =
+                marketplaceItems.filter(
+                    item => {
+                        const name =
+                            item.name
+                                .toLowerCase();
+
+                        const description =
+                            (
+                                item.description ||
+                                ""
+                            ).toLowerCase();
+
+                        const owner =
+                            item.owner_username
+                                .toLowerCase();
+
+                        return (
+                            name.includes(
+                                searchText
+                            ) ||
+                            description.includes(
+                                searchText
+                            ) ||
+                            owner.includes(
+                                searchText
+                            )
+                        );
+                    }
+                );
+
+            renderItems(
+                filteredItems
+            );
+        }
+
+        logoutButton.addEventListener(
+            "click",
+            logout
+        );
+
+        searchBar.addEventListener(
+            "input",
+            searchItems
+        );
+
+        /*
+            Temporary notification values.
+
+            These will later be replaced by
+            values loaded from the backend.
+        */
+
+        updateNotificationBadge(
+            tradeRequestCount,
+            0
+        );
+
+        updateNotificationBadge(
+            chatCount,
+            0
+        );
 
         loadItems();
     </script>

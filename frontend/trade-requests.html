@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Trade Requests | TauschUm</title>
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+    <header class="marketplace-header">
+        <a class="logo" href="marketplace.html">⇄ TauschUm</a>
+
+        <nav class="main-navigation">
+            <a href="marketplace.html">Marketplace</a>
+            <a href="my-listings.html">My Listings</a>
+            <a class="active" href="trade-requests.html">Trade Requests</a>
+            <a href="#">Chat</a>
+            <a href="#">Profile</a>
+        </nav>
+
+        <div class="marketplace-user-section">
+            <span id="username-display"></span>
+
+            <button
+                class="logout-button"
+                id="logout-button"
+                type="button"
+            >
+                Logout
+            </button>
+        </div>
+    </header>
+
+    <main class="trade-page">
+        <section class="trade-page-heading">
+            <div>
+                <h1>Trade Requests</h1>
+                <p>Review offers, make counter-offers and follow your trade history.</p>
+            </div>
+        </section>
+
+        <div id="trade-message" class="trade-message" role="status"></div>
+
+        <div class="trade-tabs" role="tablist">
+            <button
+                class="trade-tab active"
+                id="received-tab"
+                type="button"
+                data-tab="received"
+            >
+                Received
+                <span class="trade-tab-count" id="received-count">0</span>
+            </button>
+
+            <button
+                class="trade-tab"
+                id="sent-tab"
+                type="button"
+                data-tab="sent"
+            >
+                Sent
+                <span class="trade-tab-count" id="sent-count">0</span>
+            </button>
+
+            <button
+                class="trade-tab"
+                id="history-tab"
+                type="button"
+                data-tab="history"
+            >
+                History
+                <span class="trade-tab-count" id="history-count">0</span>
+            </button>
+        </div>
+
+        <section id="trade-list" class="trade-list">
+            <div class="trade-loading">Loading trade requests…</div>
+        </section>
+    </main>
+
+    <div
+        class="counter-modal"
+        id="counter-modal"
+        aria-hidden="true"
+    >
+        <div
+            class="counter-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="counter-title"
+        >
+            <div class="counter-dialog-header">
+                <div>
+                    <h2 id="counter-title">Make a counter-offer</h2>
+                    <p id="counter-description">
+                        Select what you will offer and what you want in return.
+                    </p>
+                </div>
+
+                <button
+                    class="counter-close"
+                    id="counter-close"
+                    type="button"
+                    aria-label="Close counter-offer"
+                >
+                    ×
+                </button>
+            </div>
+
+            <div class="counter-dialog-body">
+                <section class="counter-column">
+                    <h3>Your offer</h3>
+                    <p class="counter-column-description">
+                        Choose one or more of your available listings.
+                    </p>
+
+                    <div
+                        class="counter-selection-list"
+                        id="counter-offered-items"
+                    ></div>
+                </section>
+
+                <section class="counter-column">
+                    <h3>Your request</h3>
+                    <p class="counter-column-description">
+                        Choose one or more listings belonging to the other trader.
+                    </p>
+
+                    <div
+                        class="counter-selection-list"
+                        id="counter-requested-items"
+                    ></div>
+                </section>
+            </div>
+
+            <div class="counter-dialog-footer">
+                <button
+                    class="trade-action trade-action-secondary"
+                    id="counter-cancel"
+                    type="button"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    class="trade-action trade-action-primary"
+                    id="counter-submit"
+                    type="button"
+                >
+                    Send counter-offer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = "http://127.0.0.1:8000";
+
+        const userId = Number(
+            localStorage.getItem("user_id")
+        );
+
+        const username = localStorage.getItem("username");
+
+        const tradeList = document.getElementById("trade-list");
+        const tradeMessage = document.getElementById("trade-message");
+
+        const receivedCount = document.getElementById("received-count");
+        const sentCount = document.getElementById("sent-count");
+        const historyCount = document.getElementById("history-count");
+
+        const counterModal = document.getElementById("counter-modal");
+        const counterOfferedItems = document.getElementById(
+            "counter-offered-items"
+        );
+        const counterRequestedItems = document.getElementById(
+            "counter-requested-items"
+        );
+        const counterSubmit = document.getElementById("counter-submit");
+
+        let receivedTrades = [];
+        let sentTrades = [];
+        let activeTab = "received";
+        let counteringTrade = null;
+
+        if (!userId || !username) {
+            window.location.href = "login.html";
+        }
+
+        document.getElementById("username-display").textContent = username;
+
+        document.getElementById("logout-button").addEventListener(
+            "click",
+            () => {
+                localStorage.removeItem("user_id");
+                localStorage.removeItem("username");
+                window.location.href = "login.html";
+            }
+        );
+
+        document.querySelectorAll(".trade-tab").forEach((button) => {
+            button.addEventListener("click", () => {
+                activeTab = button.dataset.tab;
+
+                document.querySelectorAll(".trade-tab").forEach((tab) => {
+                    tab.classList.toggle(
+                        "active",
+                        tab.dataset.tab === activeTab
+                    );
+                });
+
+                renderCurrentTab();
+            });
+        });
+
+        document.getElementById("counter-close").addEventListener(
+            "click",
+            closeCounterModal
+        );
+
+        document.getElementById("counter-cancel").addEventListener(
+            "click",
+            closeCounterModal
+        );
+
+        counterModal.addEventListener("click", (event) => {
+            if (event.target === counterModal) {
+                closeCounterModal();
+            }
+        });
+
+        counterSubmit.addEventListener("click", submitCounterOffer);
+
+        function showMessage(message, type) {
+            tradeMessage.textContent = message;
+            tradeMessage.className = `trade-message ${type}`;
+
+            window.scrollTo({
+                top: 0,
+                behaviour: "smooth"
+            });
+        }
+
+        function clearMessage() {
+            tradeMessage.textContent = "";
+            tradeMessage.className = "trade-message";
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? "")
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#039;");
+        }
+
+        function formatDate(value) {
+            return new Intl.DateTimeFormat("en-GB", {
+                dateStyle: "medium",
+                timeStyle: "short"
+            }).format(new Date(value));
+        }
+
+        function statusLabel(status) {
+            const labels = {
+                pending: "Pending",
+                accepted: "Accepted",
+                declined: "Declined",
+                cancelled: "Cancelled",
+                countered: "Countered",
+                unavailable: "Unavailable"
+            };
+
+            return labels[status] ?? status;
+        }
+
+        function itemImage(item, className = "") {
+            if (!item.photo_path) {
+                return `
+                    <div class="${className || "trade-item-placeholder"}">
+                        No image
+                    </div>
+                `;
+            }
+
+            return `
+                <img
+                    class="${className}"
+                    src="${escapeHtml(item.photo_path)}"
+                    alt="${escapeHtml(item.name)}"
+                >
+            `;
+        }
+
+        function renderTradeItem(item) {
+            return `
+                <article class="trade-item">
+                    ${itemImage(item)}
+
+                    <div class="trade-item-info">
+                        <p class="trade-item-name">
+                            ${escapeHtml(item.name)}
+                        </p>
+
+                        <p class="trade-item-owner">
+                            ${escapeHtml(item.owner_username)}
+                        </p>
+                    </div>
+                </article>
+            `;
+        }
+
+        function renderTradeCard(trade, view) {
+            const isReceived = view === "received";
+            const isPending = trade.status === "pending";
+
+            const heading = isReceived
+                ? `${trade.requester_username} sent you an offer`
+                : `Offer sent to ${trade.receiver_username}`;
+
+            let actions = "";
+
+            if (isPending && isReceived) {
+                actions = `
+                    <button
+                        class="trade-action trade-action-primary"
+                        data-action="accept"
+                        data-trade-id="${trade.id}"
+                    >
+                        Accept
+                    </button>
+
+                    <button
+                        class="trade-action trade-action-secondary"
+                        data-action="counter"
+                        data-trade-id="${trade.id}"
+                    >
+                        Counter-offer
+                    </button>
+
+                    <button
+                        class="trade-action trade-action-danger"
+                        data-action="decline"
+                        data-trade-id="${trade.id}"
+                    >
+                        Decline
+                    </button>
+                `;
+            }
+
+            if (isPending && view === "sent") {
+                actions = `
+                    <button
+                        class="trade-action trade-action-danger"
+                        data-action="cancel"
+                        data-trade-id="${trade.id}"
+                    >
+                        Cancel offer
+                    </button>
+                `;
+            }
+
+            const parentNote = trade.parent_trade_request_id
+                ? `<p class="trade-date">Counter to trade #${trade.parent_trade_request_id}</p>`
+                : "";
+
+            return `
+                <article class="trade-card">
+                    <div class="trade-card-header">
+                        <div>
+                            <h2>${escapeHtml(heading)}</h2>
+                            <p class="trade-date">
+                                ${formatDate(trade.created_at)}
+                            </p>
+                            ${parentNote}
+                        </div>
+
+                        <span class="trade-status status-${escapeHtml(trade.status)}">
+                            ${escapeHtml(statusLabel(trade.status))}
+                        </span>
+                    </div>
+
+                    <div class="trade-comparison">
+                        <section class="trade-side">
+                            <h3>
+                                ${escapeHtml(trade.requester_username)} offers
+                            </h3>
+
+                            <div class="trade-items">
+                                ${trade.offered_items.map(renderTradeItem).join("")}
+                            </div>
+                        </section>
+
+                        <div class="trade-direction" aria-hidden="true">⇄</div>
+
+                        <section class="trade-side">
+                            <h3>
+                                ${escapeHtml(trade.requester_username)} requests
+                            </h3>
+
+                            <div class="trade-items">
+                                ${trade.requested_items.map(renderTradeItem).join("")}
+                            </div>
+                        </section>
+                    </div>
+
+                    ${
+                        actions
+                            ? `<div class="trade-card-footer">${actions}</div>`
+                            : ""
+                    }
+                </article>
+            `;
+        }
+
+        function uniqueHistoryTrades() {
+            const tradeMap = new Map();
+
+            [...receivedTrades, ...sentTrades].forEach((trade) => {
+                if (trade.status !== "pending") {
+                    tradeMap.set(trade.id, trade);
+                }
+            });
+
+            return [...tradeMap.values()].sort(
+                (first, second) =>
+                    new Date(second.created_at) -
+                    new Date(first.created_at)
+            );
+        }
+
+        function updateCounts() {
+            receivedCount.textContent = receivedTrades.filter(
+                (trade) => trade.status === "pending"
+            ).length;
+
+            sentCount.textContent = sentTrades.filter(
+                (trade) => trade.status === "pending"
+            ).length;
+
+            historyCount.textContent = uniqueHistoryTrades().length;
+        }
+
+        function renderCurrentTab() {
+            let trades = [];
+            let view = activeTab;
+
+            if (activeTab === "received") {
+                trades = receivedTrades.filter(
+                    (trade) => trade.status === "pending"
+                );
+            } else if (activeTab === "sent") {
+                trades = sentTrades.filter(
+                    (trade) => trade.status === "pending"
+                );
+            } else {
+                trades = uniqueHistoryTrades();
+                view = "history";
+            }
+
+            if (trades.length === 0) {
+                const messages = {
+                    received: "You have no pending trade requests.",
+                    sent: "You have not sent any pending trade requests.",
+                    history: "You do not have any finished trade requests yet."
+                };
+
+                tradeList.innerHTML = `
+                    <div class="trade-empty">
+                        ${messages[activeTab]}
+                    </div>
+                `;
+
+                return;
+            }
+
+            tradeList.innerHTML = trades
+                .map((trade) => {
+                    const cardView = view === "history"
+                        ? (
+                            trade.receiver_id === userId
+                                ? "received"
+                                : "sent"
+                        )
+                        : view;
+
+                    return renderTradeCard(trade, cardView);
+                })
+                .join("");
+
+            tradeList.querySelectorAll("[data-action]").forEach((button) => {
+                button.addEventListener("click", handleTradeAction);
+            });
+        }
+
+        async function getErrorMessage(response) {
+            try {
+                const data = await response.json();
+                return data.detail || "Something went wrong.";
+            } catch {
+                return "Something went wrong.";
+            }
+        }
+
+        async function loadTradeRequests() {
+            clearMessage();
+
+            try {
+                const [receivedResponse, sentResponse] = await Promise.all([
+                    fetch(
+                        `${API_BASE_URL}/users/${userId}/trade-requests/received`
+                    ),
+                    fetch(
+                        `${API_BASE_URL}/users/${userId}/trade-requests/sent`
+                    )
+                ]);
+
+                if (!receivedResponse.ok) {
+                    throw new Error(
+                        await getErrorMessage(receivedResponse)
+                    );
+                }
+
+                if (!sentResponse.ok) {
+                    throw new Error(
+                        await getErrorMessage(sentResponse)
+                    );
+                }
+
+                receivedTrades = await receivedResponse.json();
+                sentTrades = await sentResponse.json();
+
+                updateCounts();
+                renderCurrentTab();
+
+            } catch (error) {
+                tradeList.innerHTML = `
+                    <div class="trade-empty">
+                        Could not load your trade requests.
+                    </div>
+                `;
+
+                showMessage(error.message, "error");
+            }
+        }
+
+        async function handleTradeAction(event) {
+            const button = event.currentTarget;
+            const action = button.dataset.action;
+            const tradeId = Number(button.dataset.tradeId);
+
+            const trade = receivedTrades.find(
+                (request) => request.id === tradeId
+            ) || sentTrades.find(
+                (request) => request.id === tradeId
+            );
+
+            if (!trade) {
+                showMessage("Trade request could not be found.", "error");
+                return;
+            }
+
+            if (action === "counter") {
+                await openCounterModal(trade);
+                return;
+            }
+
+            const confirmationMessages = {
+                accept: "Accept this trade? The items will immediately be marked as traded.",
+                decline: "Decline this trade request?",
+                cancel: "Cancel this trade request?"
+            };
+
+            if (!window.confirm(confirmationMessages[action])) {
+                return;
+            }
+
+            button.disabled = true;
+
+            try {
+                const response = await fetch(
+                    `${API_BASE_URL}/trade-requests/${tradeId}/${action}`,
+                    {
+                        method: "PATCH",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            user_id: userId
+                        })
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error(await getErrorMessage(response));
+                }
+
+                const successMessages = {
+                    accept: "Trade accepted. The listings have been removed from the marketplace.",
+                    decline: "Trade request declined.",
+                    cancel: "Trade request cancelled."
+                };
+
+                showMessage(successMessages[action], "success");
+                await loadTradeRequests();
+
+            } catch (error) {
+                showMessage(error.message, "error");
+                button.disabled = false;
+            }
+        }
+
+        function renderCounterOption(item, side, checkedIds) {
+            const checked = checkedIds.has(item.id) ? "checked" : "";
+
+            return `
+                <label class="counter-option">
+                    <input
+                        type="checkbox"
+                        name="${side}"
+                        value="${item.id}"
+                        ${checked}
+                    >
+
+                    ${
+                        item.photo_path
+                            ? `
+                                <img
+                                    src="${escapeHtml(item.photo_path)}"
+                                    alt="${escapeHtml(item.name)}"
+                                >
+                            `
+                            : `
+                                <span class="counter-option-placeholder">
+                                    No image
+                                </span>
+                            `
+                    }
+
+                    <span>
+                        <p class="counter-option-name">
+                            ${escapeHtml(item.name)}
+                        </p>
+
+                        <p class="counter-option-owner">
+                            ${escapeHtml(item.owner_username)}
+                        </p>
+                    </span>
+                </label>
+            `;
+        }
+
+        async function openCounterModal(trade) {
+            clearMessage();
+            counteringTrade = trade;
+
+            counterOfferedItems.innerHTML = `
+                <div class="trade-loading">Loading your items…</div>
+            `;
+
+            counterRequestedItems.innerHTML = `
+                <div class="trade-loading">Loading their items…</div>
+            `;
+
+            counterModal.classList.add("open");
+            counterModal.setAttribute("aria-hidden", "false");
+            document.body.style.overflow = "hidden";
+
+            try {
+                const [ownItemsResponse, otherItemsResponse] = await Promise.all([
+                    fetch(`${API_BASE_URL}/users/${userId}/items`),
+                    fetch(
+                        `${API_BASE_URL}/users/${trade.requester_id}/items`
+                    )
+                ]);
+
+                if (!ownItemsResponse.ok) {
+                    throw new Error(
+                        await getErrorMessage(ownItemsResponse)
+                    );
+                }
+
+                if (!otherItemsResponse.ok) {
+                    throw new Error(
+                        await getErrorMessage(otherItemsResponse)
+                    );
+                }
+
+                const ownItems = await ownItemsResponse.json();
+                const otherItems = await otherItemsResponse.json();
+
+                /*
+                 * Reverse the original trade by default:
+                 * - Their requested items belong to the logged-in receiver,
+                 *   so they become the receiver's offered items.
+                 * - Their offered items become the receiver's requested items.
+                 */
+                const defaultOfferedIds = new Set(
+                    trade.requested_items.map((item) => item.id)
+                );
+
+                const defaultRequestedIds = new Set(
+                    trade.offered_items.map((item) => item.id)
+                );
+
+                counterOfferedItems.innerHTML = ownItems.length
+                    ? ownItems
+                        .map((item) => renderCounterOption(
+                            item,
+                            "offered-item",
+                            defaultOfferedIds
+                        ))
+                        .join("")
+                    : `
+                        <div class="trade-empty">
+                            You have no available listings to offer.
+                        </div>
+                    `;
+
+                counterRequestedItems.innerHTML = otherItems.length
+                    ? otherItems
+                        .map((item) => renderCounterOption(
+                            item,
+                            "requested-item",
+                            defaultRequestedIds
+                        ))
+                        .join("")
+                    : `
+                        <div class="trade-empty">
+                            The other trader has no available listings.
+                        </div>
+                    `;
+
+            } catch (error) {
+                closeCounterModal();
+                showMessage(error.message, "error");
+            }
+        }
+
+        function closeCounterModal() {
+            counteringTrade = null;
+            counterModal.classList.remove("open");
+            counterModal.setAttribute("aria-hidden", "true");
+            document.body.style.overflow = "";
+        }
+
+        function selectedCounterItemIds(name) {
+            return [...document.querySelectorAll(
+                `input[name="${name}"]:checked`
+            )].map((checkbox) => Number(checkbox.value));
+        }
+
+        async function submitCounterOffer() {
+            if (!counteringTrade) {
+                return;
+            }
+
+            const offeredItemIds = selectedCounterItemIds("offered-item");
+            const requestedItemIds = selectedCounterItemIds("requested-item");
+
+            if (offeredItemIds.length === 0) {
+                window.alert("Choose at least one item to offer.");
+                return;
+            }
+
+            if (requestedItemIds.length === 0) {
+                window.alert("Choose at least one item to request.");
+                return;
+            }
+
+            counterSubmit.disabled = true;
+
+            try {
+                const response = await fetch(
+                    `${API_BASE_URL}/trade-requests/${counteringTrade.id}/counter`,
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            user_id: userId,
+                            offered_item_ids: offeredItemIds,
+                            requested_item_ids: requestedItemIds
+                        })
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error(await getErrorMessage(response));
+                }
+
+                closeCounterModal();
+                showMessage("Counter-offer sent.", "success");
+
+                /*
+                 * The logged-in user sent the counter, so show the Sent tab.
+                 */
+                activeTab = "sent";
+
+                document.querySelectorAll(".trade-tab").forEach((tab) => {
+                    tab.classList.toggle(
+                        "active",
+                        tab.dataset.tab === activeTab
+                    );
+                });
+
+                await loadTradeRequests();
+
+            } catch (error) {
+                showMessage(error.message, "error");
+            } finally {
+                counterSubmit.disabled = false;
+            }
+        }
+
+        loadTradeRequests();
+    </script>
+</body>
+</html>

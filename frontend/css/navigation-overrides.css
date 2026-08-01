@@ -1,0 +1,25 @@
+/* 
+   Navigation
+*/
+
+   .main-navigation {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+}
+
+.main-navigation a {
+    text-decoration: none;
+    color: #333333;
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+
+.main-navigation a:hover {
+    color: #6b2a8f;
+}
+
+.main-navigation a.active {
+    color: #6b2a8f;
+}
+

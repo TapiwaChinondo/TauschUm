@@ -1,0 +1,211 @@
+/* 
+
+*/
+
+.marketplace-header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+
+    display: flex;
+    align-items: center;
+    gap: 26px;
+
+    width: 100%;
+    min-height: 72px;
+
+    padding: 14px 32px;
+
+    background-color: white;
+    border-bottom: 1px solid #dddddd;
+}
+
+
+/* Logo */
+
+.logo {
+    display: inline-flex;
+    align-items: center;
+
+    flex-shrink: 0;
+
+    margin: 0;
+
+    color: #222222;
+
+    font-size: 24px;
+    font-weight: bold;
+
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.logo:hover {
+    color: #555555;
+}
+
+
+/* 
+    Main naviagtion
+*/
+
+.main-navigation {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+
+    flex: 1;
+    min-width: 0;
+}
+
+.nav-link {
+    position: relative;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    margin: 0;
+    padding: 10px 0;
+
+    color: #555555;
+
+    font-size: 15px;
+    font-weight: 600;
+
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.nav-link:hover {
+    color: #111111;
+}
+
+.nav-link.active {
+    color: #111111;
+}
+
+.nav-link.active::after {
+    position: absolute;
+    right: 0;
+    bottom: 3px;
+    left: 0;
+
+    height: 2px;
+
+    background-color: #222222;
+
+    content: "";
+}
+
+
+/* 
+   Notifications
+*/
+
+.notification-link {
+    position: relative;
+}
+
+.notification-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 20px;
+    height: 20px;
+
+    padding: 0 6px;
+
+    border-radius: 999px;
+
+    background-color: #d93025;
+    color: white;
+
+    font-size: 12px;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.notification-badge.hidden {
+    display: none;
+}
+
+
+/* 
+    Log in, Log out  
+*/
+
+.marketplace-user-section {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    flex-shrink: 0;
+}
+
+#username-display {
+    color: #444444;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    white-space: nowrap;
+}
+
+.logout-button {
+    margin: 0;
+    padding: 9px 14px;
+
+    border: 1px solid #cccccc;
+    border-radius: 8px;
+
+    background-color: white;
+    color: #222222;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    white-space: nowrap;
+}
+
+.logout-button:hover {
+    background-color: #f1f1f1;
+}
+
+
+/* 
+    Simple Search Bar 
+ */
+
+.marketplace-search-section {
+    display: flex;
+    justify-content: center;
+
+    width: 100%;
+
+    padding: 22px 24px 0;
+}
+
+.search-bar {
+    display: block;
+
+    width: min(700px, 100%);
+
+    padding: 13px 18px;
+
+    border: 1px solid #bbbbbb;
+    border-radius: 10px;
+
+    background-color: white;
+
+    font-size: 16px;
+}
+
+.search-bar:focus {
+    border-color: #555555;
+    outline: none;
+
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08);
+}
+

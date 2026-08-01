@@ -11,3 +11,11 @@
 
 # Images 
 /frontend/images
+
+# Test / backup files
+/backups
+/docs
+
+
+# Auxilary Files
+**/.DS_Store

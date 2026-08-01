@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>View Listing | TauschUm</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="listing-page">
+
+    <header class="marketplace-header">
+        <a href="marketplace.html" class="logo">
+            ⇄ TauschUm
+        </a>
+
+        <a
+            href="marketplace.html"
+            class="back-to-marketplace"
+        >
+            Back to marketplace
+        </a>
+
+        <span id="username-display"></span>
+    </header>
+
+    <main class="listing-container">
+
+        <section
+            id="listing-card"
+            class="listing-card"
+        >
+            <p>Loading listing...</p>
+        </section>
+
+        <section
+            id="trade-menu"
+            class="trade-menu hidden"
+        >
+            <div class="trade-menu-header">
+
+                <div>
+                    <h2>Create a trade offer</h2>
+
+                    <p>
+                        Add one or more items to each side of the trade.
+                    </p>
+                </div>
+
+                <button
+                    type="button"
+                    id="close-trade-menu"
+                    class="close-trade-menu"
+                    aria-label="Close trade menu"
+                >
+                    ×
+                </button>
+
+            </div>
+
+            <div class="trade-board">
+
+                <!-- YOUR OFFER -->
+
+                <section class="trade-panel">
+                    <h3>Your offer</h3>
+
+                    <div class="trade-slider">
+
+                        <button
+                            type="button"
+                            id="previous-user-item-button"
+                            class="slider-button"
+                            aria-label="Previous item"
+                        >
+                            ‹
+                        </button>
+
+                        <div
+                            id="user-item-slide"
+                            class="trade-slide"
+                        >
+                            <p>Loading your items...</p>
+                        </div>
+
+                        <button
+                            type="button"
+                            id="next-user-item-button"
+                            class="slider-button"
+                            aria-label="Next item"
+                        >
+                            ›
+                        </button>
+
+                    </div>
+
+                    <p
+                        id="user-slider-position"
+                        class="slider-position"
+                    ></p>
+
+                    <button
+                        type="button"
+                        id="toggle-offered-item-button"
+                        class="select-item-button"
+                        disabled
+                    >
+                        Add to offer
+                    </button>
+
+                    <div class="selected-items-section">
+                        <h4>Items you are offering</h4>
+
+                        <div
+                            id="selected-offered-items"
+                            class="selected-items-container"
+                        >
+                            <p class="empty-selection-message">
+                                No items selected.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="trade-exchange-symbol">
+                    ⇄
+                </div>
+
+                <!-- ITEMS BEING REQUESTED -->
+
+                <section class="trade-panel">
+                    <h3>You receive</h3>
+
+                    <div class="trade-slider">
+
+                        <button
+                            type="button"
+                            id="previous-owner-item-button"
+                            class="slider-button"
+                            aria-label="Previous requested item"
+                        >
+                            ‹
+                        </button>
+
+                        <div
+                            id="owner-item-slide"
+                            class="trade-slide"
+                        >
+                            <p>Loading available items...</p>
+                        </div>
+
+                        <button
+                            type="button"
+                            id="next-owner-item-button"
+                            class="slider-button"
+                            aria-label="Next requested item"
+                        >
+                            ›
+                        </button>
+
+                    </div>
+
+                    <p
+                        id="owner-slider-position"
+                        class="slider-position"
+                    ></p>
+
+                    <button
+                        type="button"
+                        id="toggle-requested-item-button"
+                        class="select-item-button"
+                        disabled
+                    >
+                        Add to request
+                    </button>
+
+                    <div class="selected-items-section">
+                        <h4>Items you are requesting</h4>
+
+                        <div
+                            id="selected-requested-items"
+                            class="selected-items-container"
+                        >
+                            <p class="empty-selection-message">
+                                No items selected.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+
+            <p
+                id="trade-message"
+                class="trade-message"
+            ></p>
+
+            <div class="trade-actions">
+
+                <button
+                    type="button"
+                    id="cancel-trade-button"
+                    class="secondary-button"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="button"
+                    id="send-trade-button"
+                    disabled
+                >
+                    Send offer
+                </button>
+
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        const API_URL =
+            "http://127.0.0.1:8000";
+
+        const username =
+            localStorage.getItem("username");
+
+        const userId =
+            Number(localStorage.getItem("user_id"));
+
+        const usernameDisplay =
+            document.getElementById(
+                "username-display"
+            );
+
+        const listingCard =
+            document.getElementById(
+                "listing-card"
+            );
+
+        const tradeMenu =
+            document.getElementById(
+                "trade-menu"
+            );
+
+        const tradeMessage =
+            document.getElementById(
+                "trade-message"
+            );
+
+        const sendTradeButton =
+            document.getElementById(
+                "send-trade-button"
+            );
+
+        const closeTradeMenuButton =
+            document.getElementById(
+                "close-trade-menu"
+            );
+
+        const cancelTradeButton =
+            document.getElementById(
+                "cancel-trade-button"
+            );
+
+        /*
+            Your items
+        */
+
+        const userItemSlide =
+            document.getElementById(
+                "user-item-slide"
+            );
+
+        const previousUserItemButton =
+            document.getElementById(
+                "previous-user-item-button"
+            );
+
+        const nextUserItemButton =
+            document.getElementById(
+                "next-user-item-button"
+            );
+
+        const userSliderPosition =
+            document.getElementById(
+                "user-slider-position"
+            );
+
+        const toggleOfferedItemButton =
+            document.getElementById(
+                "toggle-offered-item-button"
+            );
+
+        const selectedOfferedItemsContainer =
+            document.getElementById(
+                "selected-offered-items"
+            );
+
+        /*
+            Other user's items
+        */
+
+        const ownerItemSlide =
+            document.getElementById(
+                "owner-item-slide"
+            );
+
+        const previousOwnerItemButton =
+            document.getElementById(
+                "previous-owner-item-button"
+            );
+
+        const nextOwnerItemButton =
+            document.getElementById(
+                "next-owner-item-button"
+            );
+
+        const ownerSliderPosition =
+            document.getElementById(
+                "owner-slider-position"
+            );
+
+        const toggleRequestedItemButton =
+            document.getElementById(
+                "toggle-requested-item-button"
+            );
+
+        const selectedRequestedItemsContainer =
+            document.getElementById(
+                "selected-requested-items"
+            );
+
+        let currentItem = null;
+
+        let userItems = [];
+
+        let ownerItems = [];
+
+        let currentUserItemIndex = 0;
+
+        let currentOwnerItemIndex = 0;
+
+        const selectedOfferedItemIds =
+            new Set();
+
+        const selectedRequestedItemIds =
+            new Set();
+
+        if (!username || !userId) {
+            window.location.href =
+                "login.html";
+        } else {
+            usernameDisplay.textContent =
+                `Hello, ${username}`;
+        }
+
+        const urlParameters =
+            new URLSearchParams(
+                window.location.search
+            );
+
+        const itemId =
+            Number(urlParameters.get("id"));
+
+        function getItemImage(item, imageClass) {
+            if (!item.photo_path) {
+                return `
+                    <div class="trade-slide-placeholder">
+                        Item image
+                    </div>
+                `;
+            }
+
+            return `
+                <img
+                    src="${item.photo_path}"
+                    alt="${item.name}"
+                    class="${imageClass}"
+                >
+            `;
+        }
+
+        async function loadItem() {
+            if (!itemId) {
+                listingCard.innerHTML = `
+                    <p class="error-message">
+                        No listing was selected.
+                    </p>
+                `;
+
+                return;
+            }
+
+            try {
+                const response = await fetch(
+                    `${API_URL}/items/${itemId}`
+                );
+
+                const result =
+                    await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        result.detail ||
+                        "Could not load this listing."
+                    );
+                }
+
+                currentItem = result;
+
+                if (currentItem.owner_id === userId) {
+                    listingCard.innerHTML = `
+                        <p class="error-message">
+                            You cannot request a trade
+                            for your own item.
+                        </p>
+                    `;
+
+                    return;
+                }
+
+                const imageContent =
+                    getItemImage(
+                        currentItem,
+                        "listing-image"
+                    );
+
+                listingCard.innerHTML = `
+                    <div class="listing-image-section">
+                        ${imageContent}
+                    </div>
+
+                    <div class="listing-information">
+                        <h1>
+                            ${currentItem.name}
+                        </h1>
+
+                        <p class="listing-owner">
+                            Listed by
+                            <strong>
+                                ${currentItem.owner_username}
+                            </strong>
+                        </p>
+
+                        <section class="listing-description">
+                            <h2>Description</h2>
+
+                            <p>
+                                ${
+                                    currentItem.description ||
+                                    "No description provided."
+                                }
+                            </p>
+                        </section>
+
+                        <section class="listing-wishlist">
+                            <h2>Owner's wishlist</h2>
+
+                            <p>
+                                Wishlist coming soon.
+                            </p>
+                        </section>
+
+                        <button
+                            type="button"
+                            id="request-trade-button"
+                            class="request-trade-button"
+                        >
+                            Request a trade
+                        </button>
+                    </div>
+                `;
+
+                const requestTradeButton =
+                    document.getElementById(
+                        "request-trade-button"
+                    );
+
+                requestTradeButton.addEventListener(
+                    "click",
+                    openTradeMenu
+                );
+
+            } catch (error) {
+                listingCard.innerHTML = `
+                    <p class="error-message">
+                        ${error.message}
+                    </p>
+                `;
+            }
+        }
+
+        async function openTradeMenu() {
+            selectedOfferedItemIds.clear();
+
+            selectedRequestedItemIds.clear();
+
+            /*
+                The listing originally opened is
+                automatically requested.
+            */
+
+            selectedRequestedItemIds.add(
+                currentItem.id
+            );
+
+            currentUserItemIndex = 0;
+
+            currentOwnerItemIndex = 0;
+
+            tradeMessage.textContent = "";
+
+            sendTradeButton.textContent =
+                "Send offer";
+
+            sendTradeButton.disabled = true;
+
+            tradeMenu.classList.remove(
+                "hidden"
+            );
+
+            await Promise.all([
+                loadUserItems(),
+                loadOwnerItems()
+            ]);
+
+            renderSelectedOfferedItems();
+
+            renderSelectedRequestedItems();
+
+            updateSendButton();
+
+            tradeMenu.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+        }
+
+        function closeTradeMenu() {
+            tradeMenu.classList.add(
+                "hidden"
+            );
+
+            tradeMessage.textContent = "";
+
+            selectedOfferedItemIds.clear();
+
+            selectedRequestedItemIds.clear();
+        }
+
+        async function loadUserItems() {
+            userItemSlide.innerHTML = `
+                <p>Loading your items...</p>
+            `;
+
+            try {
+                const response = await fetch(
+                    `${API_URL}/users/${userId}/items`
+                );
+
+                const result =
+                    await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        result.detail ||
+                        "Could not load your items."
+                    );
+                }
+
+                userItems = result;
+
+                if (userItems.length === 0) {
+                    userItemSlide.innerHTML = `
+                        <p class="error-message">
+                            You need to list an item
+                            before making a trade offer.
+                        </p>
+                    `;
+
+                    previousUserItemButton.disabled =
+                        true;
+
+                    nextUserItemButton.disabled =
+                        true;
+
+                    toggleOfferedItemButton.disabled =
+                        true;
+
+                    userSliderPosition.textContent =
+                        "";
+
+                    return;
+                }
+
+                currentUserItemIndex = 0;
+
+                showCurrentUserItem();
+
+            } catch (error) {
+                userItemSlide.innerHTML = `
+                    <p class="error-message">
+                        ${error.message}
+                    </p>
+                `;
+
+                previousUserItemButton.disabled =
+                    true;
+
+                nextUserItemButton.disabled =
+                    true;
+
+                toggleOfferedItemButton.disabled =
+                    true;
+            }
+        }
+
+        async function loadOwnerItems() {
+            ownerItemSlide.innerHTML = `
+                <p>Loading available items...</p>
+            `;
+
+            try {
+                const response = await fetch(
+                    `${API_URL}/users/${currentItem.owner_id}/items`
+                );
+
+                const result =
+                    await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        result.detail ||
+                        "Could not load this user's items."
+                    );
+                }
+
+                ownerItems = result;
+
+                if (ownerItems.length === 0) {
+                    ownerItemSlide.innerHTML = `
+                        <p class="error-message">
+                            This user has no available items.
+                        </p>
+                    `;
+
+                    previousOwnerItemButton.disabled =
+                        true;
+
+                    nextOwnerItemButton.disabled =
+                        true;
+
+                    toggleRequestedItemButton.disabled =
+                        true;
+
+                    ownerSliderPosition.textContent =
+                        "";
+
+                    return;
+                }
+
+                const openedItemIndex =
+                    ownerItems.findIndex(
+                        item =>
+                            item.id === currentItem.id
+                    );
+
+                if (openedItemIndex >= 0) {
+                    currentOwnerItemIndex =
+                        openedItemIndex;
+                } else {
+                    currentOwnerItemIndex = 0;
+                }
+
+                showCurrentOwnerItem();
+
+            } catch (error) {
+                ownerItemSlide.innerHTML = `
+                    <p class="error-message">
+                        ${error.message}
+                    </p>
+                `;
+
+                previousOwnerItemButton.disabled =
+                    true;
+
+                nextOwnerItemButton.disabled =
+                    true;
+
+                toggleRequestedItemButton.disabled =
+                    true;
+            }
+        }
+
+        function showCurrentUserItem() {
+            if (userItems.length === 0) {
+                return;
+            }
+
+            const item =
+                userItems[currentUserItemIndex];
+
+            const imageContent =
+                getItemImage(
+                    item,
+                    "trade-slide-image"
+                );
+
+            userItemSlide.innerHTML = `
+                ${imageContent}
+
+                <div class="trade-slide-information">
+                    <h4>${item.name}</h4>
+
+                    <p>
+                        ${
+                            item.description ||
+                            "No description provided."
+                        }
+                    </p>
+                </div>
+            `;
+
+            userSliderPosition.textContent =
+                `${currentUserItemIndex + 1} of ${userItems.length}`;
+
+            previousUserItemButton.disabled =
+                userItems.length <= 1;
+
+            nextUserItemButton.disabled =
+                userItems.length <= 1;
+
+            toggleOfferedItemButton.disabled =
+                false;
+
+            updateOfferedItemButton();
+        }
+
+        function showCurrentOwnerItem() {
+            if (ownerItems.length === 0) {
+                return;
+            }
+
+            const item =
+                ownerItems[currentOwnerItemIndex];
+
+            const imageContent =
+                getItemImage(
+                    item,
+                    "trade-slide-image"
+                );
+
+            ownerItemSlide.innerHTML = `
+                ${imageContent}
+
+                <div class="trade-slide-information">
+                    <h4>${item.name}</h4>
+
+                    <p>
+                        ${
+                            item.description ||
+                            "No description provided."
+                        }
+                    </p>
+                </div>
+            `;
+
+            ownerSliderPosition.textContent =
+                `${currentOwnerItemIndex + 1} of ${ownerItems.length}`;
+
+            previousOwnerItemButton.disabled =
+                ownerItems.length <= 1;
+
+            nextOwnerItemButton.disabled =
+                ownerItems.length <= 1;
+
+            toggleRequestedItemButton.disabled =
+                false;
+
+            updateRequestedItemButton();
+        }
+
+        function showPreviousUserItem() {
+            if (userItems.length === 0) {
+                return;
+            }
+
+            currentUserItemIndex--;
+
+            if (currentUserItemIndex < 0) {
+                currentUserItemIndex =
+                    userItems.length - 1;
+            }
+
+            showCurrentUserItem();
+        }
+
+        function showNextUserItem() {
+            if (userItems.length === 0) {
+                return;
+            }
+
+            currentUserItemIndex++;
+
+            if (
+                currentUserItemIndex >=
+                userItems.length
+            ) {
+                currentUserItemIndex = 0;
+            }
+
+            showCurrentUserItem();
+        }
+
+        function showPreviousOwnerItem() {
+            if (ownerItems.length === 0) {
+                return;
+            }
+
+            currentOwnerItemIndex--;
+
+            if (currentOwnerItemIndex < 0) {
+                currentOwnerItemIndex =
+                    ownerItems.length - 1;
+            }
+
+            showCurrentOwnerItem();
+        }
+
+        function showNextOwnerItem() {
+            if (ownerItems.length === 0) {
+                return;
+            }
+
+            currentOwnerItemIndex++;
+
+            if (
+                currentOwnerItemIndex >=
+                ownerItems.length
+            ) {
+                currentOwnerItemIndex = 0;
+            }
+
+            showCurrentOwnerItem();
+        }
+
+        function toggleCurrentOfferedItem() {
+            const item =
+                userItems[currentUserItemIndex];
+
+            if (
+                selectedOfferedItemIds.has(item.id)
+            ) {
+                selectedOfferedItemIds.delete(
+                    item.id
+                );
+            } else {
+                selectedOfferedItemIds.add(
+                    item.id
+                );
+            }
+
+            updateOfferedItemButton();
+
+            renderSelectedOfferedItems();
+
+            updateSendButton();
+        }
+
+        function toggleCurrentRequestedItem() {
+            const item =
+                ownerItems[currentOwnerItemIndex];
+
+            if (
+                selectedRequestedItemIds.has(item.id)
+            ) {
+                selectedRequestedItemIds.delete(
+                    item.id
+                );
+            } else {
+                selectedRequestedItemIds.add(
+                    item.id
+                );
+            }
+
+            updateRequestedItemButton();
+
+            renderSelectedRequestedItems();
+
+            updateSendButton();
+        }
+
+        function updateOfferedItemButton() {
+            const item =
+                userItems[currentUserItemIndex];
+
+            if (
+                selectedOfferedItemIds.has(item.id)
+            ) {
+                toggleOfferedItemButton.textContent =
+                    "Remove from offer";
+
+                toggleOfferedItemButton.classList.add(
+                    "selected"
+                );
+            } else {
+                toggleOfferedItemButton.textContent =
+                    "Add to offer";
+
+                toggleOfferedItemButton.classList.remove(
+                    "selected"
+                );
+            }
+        }
+
+        function updateRequestedItemButton() {
+            const item =
+                ownerItems[currentOwnerItemIndex];
+
+            if (
+                selectedRequestedItemIds.has(item.id)
+            ) {
+                toggleRequestedItemButton.textContent =
+                    "Remove from request";
+
+                toggleRequestedItemButton.classList.add(
+                    "selected"
+                );
+            } else {
+                toggleRequestedItemButton.textContent =
+                    "Add to request";
+
+                toggleRequestedItemButton.classList.remove(
+                    "selected"
+                );
+            }
+        }
+
+        function renderSelectedOfferedItems() {
+            const selectedItems =
+                userItems.filter(
+                    item =>
+                        selectedOfferedItemIds.has(
+                            item.id
+                        )
+                );
+
+            if (selectedItems.length === 0) {
+                selectedOfferedItemsContainer.innerHTML = `
+                    <p class="empty-selection-message">
+                        No items selected.
+                    </p>
+                `;
+
+                return;
+            }
+
+            selectedOfferedItemsContainer.innerHTML =
+                selectedItems.map(item => `
+                    <div class="selected-item-chip">
+                        <span>${item.name}</span>
+
+                        <button
+                            type="button"
+                            class="remove-selected-item"
+                            data-offered-item-id="${item.id}"
+                            aria-label="Remove ${item.name}"
+                        >
+                            ×
+                        </button>
+                    </div>
+                `).join("");
+
+            const removeButtons =
+                selectedOfferedItemsContainer
+                    .querySelectorAll(
+                        "[data-offered-item-id]"
+                    );
+
+            removeButtons.forEach(button => {
+                button.addEventListener(
+                    "click",
+                    () => {
+                        const selectedItemId =
+                            Number(
+                                button.dataset
+                                    .offeredItemId
+                            );
+
+                        selectedOfferedItemIds.delete(
+                            selectedItemId
+                        );
+
+                        renderSelectedOfferedItems();
+
+                        updateOfferedItemButton();
+
+                        updateSendButton();
+                    }
+                );
+            });
+        }
+
+        function renderSelectedRequestedItems() {
+            const selectedItems =
+                ownerItems.filter(
+                    item =>
+                        selectedRequestedItemIds.has(
+                            item.id
+                        )
+                );
+
+            if (selectedItems.length === 0) {
+                selectedRequestedItemsContainer.innerHTML = `
+                    <p class="empty-selection-message">
+                        No items selected.
+                    </p>
+                `;
+
+                return;
+            }
+
+            selectedRequestedItemsContainer.innerHTML =
+                selectedItems.map(item => `
+                    <div class="selected-item-chip">
+                        <span>${item.name}</span>
+
+                        <button
+                            type="button"
+                            class="remove-selected-item"
+                            data-requested-item-id="${item.id}"
+                            aria-label="Remove ${item.name}"
+                        >
+                            ×
+                        </button>
+                    </div>
+                `).join("");
+
+            const removeButtons =
+                selectedRequestedItemsContainer
+                    .querySelectorAll(
+                        "[data-requested-item-id]"
+                    );
+
+            removeButtons.forEach(button => {
+                button.addEventListener(
+                    "click",
+                    () => {
+                        const selectedItemId =
+                            Number(
+                                button.dataset
+                                    .requestedItemId
+                            );
+
+                        selectedRequestedItemIds.delete(
+                            selectedItemId
+                        );
+
+                        renderSelectedRequestedItems();
+
+                        updateRequestedItemButton();
+
+                        updateSendButton();
+                    }
+                );
+            });
+        }
+
+        function updateSendButton() {
+            const hasOfferedItems =
+                selectedOfferedItemIds.size > 0;
+
+            const hasRequestedItems =
+                selectedRequestedItemIds.size > 0;
+
+            sendTradeButton.disabled =
+                !hasOfferedItems ||
+                !hasRequestedItems;
+        }
+
+        async function sendTradeOffer() {
+            if (
+                selectedOfferedItemIds.size === 0
+            ) {
+                tradeMessage.textContent =
+                    "Choose at least one item to offer.";
+
+                return;
+            }
+
+            if (
+                selectedRequestedItemIds.size === 0
+            ) {
+                tradeMessage.textContent =
+                    "Choose at least one item to request.";
+
+                return;
+            }
+
+            sendTradeButton.disabled = true;
+
+            sendTradeButton.textContent =
+                "Sending...";
+
+            tradeMessage.textContent = "";
+
+            const tradeData = {
+                requester_id: userId,
+
+                receiver_id:
+                    currentItem.owner_id,
+
+                offered_item_ids:
+                    Array.from(
+                        selectedOfferedItemIds
+                    ),
+
+                requested_item_ids:
+                    Array.from(
+                        selectedRequestedItemIds
+                    )
+            };
+
+            try {
+                const response = await fetch(
+                    `${API_URL}/trade-requests`,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body: JSON.stringify(
+                            tradeData
+                        )
+                    }
+                );
+
+                const result =
+                    await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        result.detail ||
+                        "Could not send the trade request."
+                    );
+                }
+
+                tradeMessage.textContent =
+                    "Trade request sent successfully. Returning to the marketplace...";
+
+                sendTradeButton.textContent =
+                    "Offer sent";
+
+                setTimeout(() => {
+                    window.location.href =
+                        "marketplace.html";
+                }, 1500);
+
+            } catch (error) {
+                tradeMessage.textContent =
+                    error.message;
+
+                sendTradeButton.textContent =
+                    "Send offer";
+
+                updateSendButton();
+            }
+        }
+
+        previousUserItemButton.addEventListener(
+            "click",
+            showPreviousUserItem
+        );
+
+        nextUserItemButton.addEventListener(
+            "click",
+            showNextUserItem
+        );
+
+        previousOwnerItemButton.addEventListener(
+            "click",
+            showPreviousOwnerItem
+        );
+
+        nextOwnerItemButton.addEventListener(
+            "click",
+            showNextOwnerItem
+        );
+
+        toggleOfferedItemButton.addEventListener(
+            "click",
+            toggleCurrentOfferedItem
+        );
+
+        toggleRequestedItemButton.addEventListener(
+            "click",
+            toggleCurrentRequestedItem
+        );
+
+        closeTradeMenuButton.addEventListener(
+            "click",
+            closeTradeMenu
+        );
+
+        cancelTradeButton.addEventListener(
+            "click",
+            closeTradeMenu
+        );
+
+        sendTradeButton.addEventListener(
+            "click",
+            sendTradeOffer
+        );
+
+        loadItem();
+    </script>
+
+</body>
+</html>

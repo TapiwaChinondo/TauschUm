@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>My Listings | TauschUm</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="marketplace-header">
+        <a class="logo" href="marketplace.html">⇄ TauschUm</a>
+
+        <nav class="main-navigation">
+            <a href="marketplace.html">Marketplace</a>
+            <a class="active" href="my-listings.html">My Listings</a>
+            <a href="trade-requests.html">Trade Requests</a>
+            <a href="#">Chat</a>
+            <a href="#">Profile</a>
+        </nav>
+
+        <div class="marketplace-user-section">
+            <span id="username-display"></span>
+
+            <button
+                class="logout-button"
+                id="logout-button"
+                type="button"
+            >
+                Logout
+            </button>
+        </div>
+    </header>
+
+    <main class="my-listings-page">
+        <section class="my-listings-heading">
+            <div>
+                <h1>My Listings</h1>
+
+                <p>
+                    View and manage the items you currently have listed.
+                </p>
+            </div>
+
+            <a
+                class="add-listing-button"
+                href="list-item.html"
+            >
+                + Add listing
+            </a>
+        </section>
+
+        <div
+            class="listing-message"
+            id="listing-message"
+            role="status"
+        ></div>
+
+        <section
+            class="my-listings-grid"
+            id="my-listings-grid"
+        >
+            <div class="listings-loading">
+                Loading your listings…
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const API_BASE_URL = "http://127.0.0.1:8000";
+
+        const userId = Number(
+            localStorage.getItem("user_id")
+        );
+
+        const username = localStorage.getItem("username");
+
+        const listingsGrid = document.getElementById(
+            "my-listings-grid"
+        );
+
+        const listingMessage = document.getElementById(
+            "listing-message"
+        );
+
+        if (!userId || !username) {
+            window.location.href = "login.html";
+        }
+
+        document.getElementById(
+            "username-display"
+        ).textContent = username;
+
+        document.getElementById(
+            "logout-button"
+        ).addEventListener("click", () => {
+            localStorage.removeItem("user_id");
+            localStorage.removeItem("username");
+
+            window.location.href = "login.html";
+        });
+
+        function escapeHtml(value) {
+            return String(value ?? "")
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#039;");
+        }
+
+        function showMessage(message, type) {
+            listingMessage.textContent = message;
+            listingMessage.className = (
+                `listing-message ${type}`
+            );
+        }
+
+        function clearMessage() {
+            listingMessage.textContent = "";
+            listingMessage.className = "listing-message";
+        }
+
+        async function getErrorMessage(response) {
+            try {
+                const data = await response.json();
+
+                return (
+                    data.detail ||
+                    "Something went wrong."
+                );
+            } catch {
+                return "Something went wrong.";
+            }
+        }
+
+        function renderListingCard(item) {
+            const image = item.photo_path
+                ? `
+                    <img
+                        class="my-listing-image"
+                        src="${escapeHtml(item.photo_path)}"
+                        alt="${escapeHtml(item.name)}"
+                    >
+                `
+                : `
+                    <div class="my-listing-image-placeholder">
+                        No image
+                    </div>
+                `;
+
+            return `
+                <article
+                    class="my-listing-card"
+                    data-item-id="${item.id}"
+                >
+                    ${image}
+
+                    <div class="my-listing-content">
+                        <h2>
+                            ${escapeHtml(item.name)}
+                        </h2>
+
+                        ${
+                            item.description
+                                ? `
+                                    <p class="my-listing-description">
+                                        ${escapeHtml(item.description)}
+                                    </p>
+                                `
+                                : ""
+                        }
+
+                        <div class="my-listing-actions">
+                            <a
+                                class="my-listing-view-button"
+                                href="view-listing.html?id=${item.id}"
+                            >
+                                View listing
+                            </a>
+
+                            <button
+                                class="my-listing-remove-button"
+                                type="button"
+                                data-remove-item-id="${item.id}"
+                                data-item-name="${escapeHtml(item.name)}"
+                            >
+                                Remove listing
+                            </button>
+                        </div>
+                    </div>
+                </article>
+            `;
+        }
+
+        function attachRemoveButtons() {
+            document.querySelectorAll(
+                "[data-remove-item-id]"
+            ).forEach((button) => {
+                button.addEventListener(
+                    "click",
+                    handleRemoveListing
+                );
+            });
+        }
+
+        async function loadListings() {
+            clearMessage();
+
+            try {
+                const response = await fetch(
+                    `${API_BASE_URL}/users/${userId}/items`
+                );
+
+                if (!response.ok) {
+                    throw new Error(
+                        await getErrorMessage(response)
+                    );
+                }
+
+                const items = await response.json();
+
+                if (items.length === 0) {
+                    listingsGrid.innerHTML = `
+                        <div class="my-listings-empty">
+                            <h2>You have no active listings.</h2>
+
+                            <p>
+                                Add an item when you are ready
+                                to start trading.
+                            </p>
+
+                            <a
+                                class="add-listing-button"
+                                href="list-item.html"
+                            >
+                                + Add your first listing
+                            </a>
+                        </div>
+                    `;
+
+                    return;
+                }
+
+                listingsGrid.innerHTML = items
+                    .map(renderListingCard)
+                    .join("");
+
+                attachRemoveButtons();
+
+            } catch (error) {
+                listingsGrid.innerHTML = `
+                    <div class="my-listings-empty">
+                        Could not load your listings.
+                    </div>
+                `;
+
+                showMessage(
+                    error.message,
+                    "error"
+                );
+            }
+        }
+
+        async function handleRemoveListing(event) {
+            const button = event.currentTarget;
+
+            const itemId = Number(
+                button.dataset.removeItemId
+            );
+
+            const itemName = button.dataset.itemName;
+
+            const confirmed = window.confirm(
+                `Remove "${itemName}" from your listings? ` +
+                "Any pending trade requests involving this item " +
+                "will become unavailable."
+            );
+
+            if (!confirmed) {
+                return;
+            }
+
+            button.disabled = true;
+            button.textContent = "Removing…";
+
+            try {
+                const response = await fetch(
+                    `${API_BASE_URL}/items/${itemId}/remove`,
+                    {
+                        method: "PATCH",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            user_id: userId
+                        })
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error(
+                        await getErrorMessage(response)
+                    );
+                }
+
+                const card = document.querySelector(
+                    `[data-item-id="${itemId}"]`
+                );
+
+                if (card) {
+                    card.remove();
+                }
+
+                showMessage(
+                    `"${itemName}" was removed successfully.`,
+                    "success"
+                );
+
+                const remainingCards = document.querySelectorAll(
+                    ".my-listing-card"
+                );
+
+                if (remainingCards.length === 0) {
+                    listingsGrid.innerHTML = `
+                        <div class="my-listings-empty">
+                            <h2>You have no active listings.</h2>
+
+                            <p>
+                                Add an item when you are ready
+                                to start trading.
+                            </p>
+
+                            <a
+                                class="add-listing-button"
+                                href="list-item.html"
+                            >
+                                + Add your first listing
+                            </a>
+                        </div>
+                    `;
+                }
+
+            } catch (error) {
+                showMessage(
+                    error.message,
+                    "error"
+                );
+
+                button.disabled = false;
+                button.textContent = "Remove listing";
+            }
+        }
+
+        loadListings();
+    </script>
+</body>
+</html>
